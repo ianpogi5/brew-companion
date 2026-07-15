@@ -18,8 +18,9 @@
    coarse grind 2.5+ rotations, 1:12 ratio, sugar in pot.
    Also works pour-over: treat like dark roast but coarser —
    2.0–2.2 rotations, 88–90°C, 1:15, brew 2:30–3:00
-4. Beanhi (neighbor's local blend, whole beans) — reference
-   "good cup"; grind setting TBD by matching their sample
+4. Beanhi (neighbor's local blend, whole beans) — barako–excelsa
+   blend; reference "good cup". Start ~1.9–2.1 rotations,
+   88–91°C, 1:15; dial in by matching their sample
 
 ## Features
 - Bean picker → shows grind setting, ratio, temp for that bean

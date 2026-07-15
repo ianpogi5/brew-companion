@@ -519,19 +519,20 @@ const DEFAULT_BEANS = [
   {
     id: 'beanhi',
     name: 'Beanhi (neighbor’s blend)',
-    desc: 'Reference "good cup" — grind still TBD',
+    desc: 'Barako–excelsa blend — reference "good cup"',
     style: 'pourover',
-    grindMin: 1.8, grindMax: 1.8,
-    tempMin: 90, tempMax: 93,
-    timeMin: 165, timeMax: 195,
+    grindMin: 1.9, grindMax: 2.1,
+    tempMin: 88, tempMax: 91,
+    timeMin: 150, timeMax: 180,
     ratio: 15,
-    note: 'Grind setting is still being dialed in. Brew, compare against their sample cup, and log what you changed. Medium-roast defaults used as a starting point.'
+    note: 'A barako–excelsa blend: both bold beans that extract fast, so start coarse and cool. Dial in by brewing against their sample cup — log every change until it matches.'
   }
 ];
 
 const BEANS_KEY = 'brew-companion-beans';
 const SEED_KEY = 'brew-companion-seed';
-const SEED_VERSION = 2; // bump when DEFAULT_BEANS gains entries existing devices should receive
+const SEED_VERSION = 3; // bump when defaults change in a way existing devices should receive
+const SEED_ADDITIONS = { 2: ['barako-pourover'] }; // bean ids introduced at each seed version
 const SETTINGS_KEY = 'brew-companion-settings';
 const DEFAULT_SETTINGS = { grinder: 'C3 ESP', gramsPerTbsp: 6 }; // rough: 1 level tbsp whole beans ≈ 6 g
 
@@ -546,9 +547,20 @@ function loadBeans() {
   } catch (e) {}
   const seeded = parseInt(localStorage.getItem(SEED_KEY), 10) || 1;
   if (stored && seeded < SEED_VERSION) {
-    DEFAULT_BEANS.forEach(d => {
-      if (!stored.some(b => b.id === d.id)) stored.push(JSON.parse(JSON.stringify(d)));
-    });
+    for (let v = seeded + 1; v <= SEED_VERSION; v++) {
+      (SEED_ADDITIONS[v] || []).forEach(id => {
+        if (!stored.some(b => b.id === id)) {
+          stored.push(JSON.parse(JSON.stringify(DEFAULT_BEANS.find(d => d.id === id))));
+        }
+      });
+    }
+    // v3: Beanhi turned out to be a barako–excelsa blend — replace its old
+    // medium-roast placeholder settings, but only if the user hasn't tuned them
+    if (seeded < 3) {
+      const i = stored.findIndex(b => b.id === 'beanhi'
+        && b.grindMin === 1.8 && b.grindMax === 1.8 && b.tempMin === 90 && b.tempMax === 93);
+      if (i >= 0) stored[i] = JSON.parse(JSON.stringify(DEFAULT_BEANS.find(d => d.id === 'beanhi')));
+    }
     localStorage.setItem(BEANS_KEY, JSON.stringify(stored));
   }
   localStorage.setItem(SEED_KEY, SEED_VERSION);
