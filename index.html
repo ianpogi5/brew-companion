@@ -252,6 +252,16 @@
   .log-entry .stars { color: var(--warn); }
   .log-entry .del { background: none; border: none; color: var(--danger); font-size: 0.75rem; cursor: pointer; padding: 4px 0 0; }
 
+  .app-footer {
+    text-align: center;
+    padding: 22px 0 8px;
+    font-size: 0.75rem;
+  }
+  .app-footer a {
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--accent-dim);
+  }
   .badge {
     display: inline-block;
     background: var(--accent-dim);
@@ -457,6 +467,10 @@
       <button class="btn secondary" onclick="resetBeans()">Restore default beans</button>
     </div>
   </section>
+
+  <footer class="app-footer">
+    <a href="https://github.com/ianpogi5/brew-companion" target="_blank" rel="noopener">☕ open source — ianpogi5/brew-companion</a>
+  </footer>
 
 </main>
 
