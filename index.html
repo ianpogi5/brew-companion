@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#2b1d16">
+<title>Brew Companion</title>
+<style>
+  :root {
+    --bg: #1c1310;
+    --card: #2b1d16;
+    --card-2: #3a2a20;
+    --accent: #d4915c;
+    --accent-dim: #8a5a36;
+    --text: #f3e9df;
+    --muted: #b09a88;
+    --good: #7fbf7f;
+    --warn: #e0b050;
+    --danger: #d47a6a;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  header {
+    padding: 14px 16px 10px;
+    text-align: center;
+  }
+  header h1 { font-size: 1.15rem; letter-spacing: 0.5px; }
+  header h1 span { color: var(--accent); }
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 14px 90px;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Bottom nav */
+  nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    background: var(--card);
+    border-top: 1px solid #00000055;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 10;
+  }
+  nav button {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.72rem;
+    padding: 10px 0 12px;
+    cursor: pointer;
+  }
+  nav button .ico { display: block; font-size: 1.35rem; margin-bottom: 2px; }
+  nav button.active { color: var(--accent); }
+
+  /* Cards & general */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card h2 { font-size: 0.95rem; color: var(--accent); margin-bottom: 10px; }
+  .muted { color: var(--muted); font-size: 0.85rem; }
+  .small { font-size: 0.8rem; }
+
+  /* Bean picker */
+  .bean-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: var(--card);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  .bean-btn.selected { border-color: var(--accent); background: var(--card-2); }
+  .bean-btn .bname { font-weight: 600; }
+  .bean-btn .bdesc { display: block; color: var(--muted); font-size: 0.8rem; margin-top: 3px; }
+  .bean-btn .btag {
+    float: right;
+    font-size: 0.68rem;
+    background: var(--accent-dim);
+    color: var(--text);
+    border-radius: 20px;
+    padding: 2px 9px;
+    margin-top: 2px;
+  }
+
+  /* Recipe grid */
+  .recipe-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .stat {
+    background: var(--card-2);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+  .stat .lbl { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat .val { font-size: 1.05rem; font-weight: 700; margin-top: 3px; }
+
+  /* Inputs */
+  label.fld { display: block; font-size: 0.8rem; color: var(--muted); margin: 10px 0 4px; }
+  input[type=number], input[type=text], input[type=date], select, textarea {
+    width: 100%;
+    background: var(--card-2);
+    border: 1px solid #00000044;
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 1.05rem;
+    padding: 10px 12px;
+  }
+  textarea { resize: vertical; min-height: 60px; font-size: 0.95rem; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .seg {
+    display: flex;
+    background: var(--card-2);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .seg button {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 9px 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .seg button.active { background: var(--accent); color: #221409; font-weight: 700; }
+
+  .stepper { display: flex; align-items: center; gap: 10px; }
+  .stepper button {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    border: none;
+    background: var(--card-2);
+    color: var(--accent);
+    font-size: 1.4rem;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .stepper input { text-align: center; }
+
+  .btn {
+    display: block;
+    width: 100%;
+    background: var(--accent);
+    color: #221409;
+    border: none;
+    border-radius: var(--radius);
+    padding: 15px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 12px;
+  }
+  .btn.secondary { background: var(--card-2); color: var(--text); font-weight: 500; }
+  .btn.danger { background: var(--danger); }
+  .btn:disabled { opacity: 0.4; }
+
+  /* Timer */
+  .timer-big {
+    text-align: center;
+    padding: 18px 0 6px;
+  }
+  .timer-big .phase { font-size: 0.85rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; }
+  .timer-big .clock { font-size: 4rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .timer-big .sub { color: var(--muted); font-size: 0.95rem; min-height: 1.4em; }
+  .timer-big .target { font-size: 1.5rem; font-weight: 700; color: var(--good); margin-top: 4px; }
+
+  .progress-track {
+    height: 8px;
+    background: var(--card-2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 14px 0 6px;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    transition: width 0.3s linear;
+  }
+
+  .steps-list { margin-top: 12px; }
+  .step-item {
+    display: flex;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    background: var(--card);
+    font-size: 0.88rem;
+    align-items: center;
+  }
+  .step-item.current { background: var(--card-2); outline: 2px solid var(--accent); }
+  .step-item.done { opacity: 0.45; }
+  .step-item .t { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 700; min-width: 44px; }
+
+  /* Troubleshooter */
+  .taste-btn {
+    width: 100%;
+    border: none;
+    border-radius: var(--radius);
+    padding: 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    cursor: pointer;
+    color: #221409;
+  }
+  .advice li { margin: 8px 0 8px 18px; font-size: 0.92rem; }
+
+  /* Log */
+  .log-entry {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    font-size: 0.88rem;
+  }
+  .log-entry .top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .log-entry .bean { font-weight: 700; }
+  .log-entry .stars { color: var(--warn); }
+  .log-entry .del { background: none; border: none; color: var(--danger); font-size: 0.75rem; cursor: pointer; padding: 4px 0 0; }
+
+  .badge {
+    display: inline-block;
+    background: var(--accent-dim);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.7rem;
+    margin: 2px 3px 2px 0;
+  }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header><h1>☕ Brew <span>Companion</span></h1></header>
+
+<main>
+
+  <!-- ============ BREW SCREEN ============ -->
+  <section id="screen-brew" class="screen active">
+
+    <!-- Step 1: bean picker -->
+    <div id="brew-pick">
+      <p class="muted" style="margin:4px 2px 10px">Pick your bean</p>
+      <div id="bean-list"></div>
+    </div>
+
+    <!-- Step 2: recipe + dose -->
+    <div id="brew-recipe" class="hidden">
+      <button class="btn secondary small" style="margin:0 0 12px;padding:10px" onclick="backToPicker()">‹ Change bean</button>
+
+      <div class="card">
+        <h2 id="recipe-bean-name"></h2>
+        <div class="recipe-grid" id="recipe-grid"></div>
+        <p class="muted small" id="recipe-note"></p>
+      </div>
+
+      <div class="card">
+        <h2>Dose &amp; water</h2>
+        <div class="seg" id="mode-seg">
+          <button id="mode-grams" class="active" onclick="setMode('grams')">Grams (scale)</button>
+          <button id="mode-spoons" onclick="setMode('spoons')">Spoons (no scale)</button>
+        </div>
+
+        <label class="fld" id="dose-label">Coffee (g)</label>
+        <div class="stepper">
+          <button onclick="bumpDose(-1)">−</button>
+          <input type="number" id="dose-input" inputmode="decimal" value="15" onchange="recalc()">
+          <button onclick="bumpDose(1)">+</button>
+        </div>
+
+        <label class="fld">Ratio — 1 : <span id="ratio-val">15</span></label>
+        <div class="stepper">
+          <button onclick="bumpRatio(-0.5)">−</button>
+          <input type="number" id="ratio-input" inputmode="decimal" step="0.5" value="15" onchange="recalc()">
+          <button onclick="bumpRatio(0.5)">+</button>
+        </div>
+
+        <div class="recipe-grid" style="margin-top:14px">
+          <div class="stat"><div class="lbl">Total water</div><div class="val" id="calc-water">—</div></div>
+          <div class="stat"><div class="lbl" id="bloom-lbl">Bloom water</div><div class="val" id="calc-bloom">—</div></div>
+        </div>
+        <p class="muted small hidden" id="spoon-note"></p>
+      </div>
+
+      <button class="btn" id="start-brew-btn" onclick="startTimer()">Start guided brew ▶</button>
+    </div>
+
+    <!-- Step 3: guided timer -->
+    <div id="brew-timer" class="hidden">
+      <div class="timer-big">
+        <div class="phase" id="timer-phase">Bloom</div>
+        <div class="clock" id="timer-clock">0:00</div>
+        <div class="sub" id="timer-sub"></div>
+        <div class="target" id="timer-target"></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="timer-progress"></div></div>
+      <p class="muted small" style="text-align:center" id="timer-total"></p>
+
+      <div class="steps-list" id="timer-steps"></div>
+
+      <button class="btn" id="timer-main-btn" onclick="timerMainAction()">Pause</button>
+      <button class="btn secondary" onclick="stopTimer()">End brew</button>
+    </div>
+
+    <!-- Step 4: done -->
+    <div id="brew-done" class="hidden">
+      <div class="card" style="text-align:center">
+        <h2>Brew complete 🎉</h2>
+        <p class="muted" id="done-summary" style="margin:8px 0 4px"></p>
+        <p class="muted small">Taste it, then log how it went.</p>
+      </div>
+      <button class="btn" onclick="goLogPrefilled()">Log this brew ✍</button>
+      <button class="btn secondary" onclick="resetBrew()">Brew another</button>
+    </div>
+
+  </section>
+
+  <!-- ============ TROUBLESHOOT SCREEN ============ -->
+  <section id="screen-taste" class="screen">
+    <p class="muted" style="margin:4px 2px 10px">How does the cup taste?</p>
+    <button class="taste-btn" style="background:#d47a6a" onclick="showAdvice('bitter')">😖 Bitter / harsh</button>
+    <button class="taste-btn" style="background:#e0c050" onclick="showAdvice('sour')">😬 Sour / weak / watery</button>
+    <button class="taste-btn" style="background:#7fbf7f" onclick="showAdvice('good')">😋 Just right</button>
+    <div class="card hidden" id="advice-card">
+      <h2 id="advice-title"></h2>
+      <ul class="advice" id="advice-list"></ul>
+      <p class="muted small" style="margin-top:10px">Change <b>one thing at a time</b> so you know what fixed it. Grind is the strongest lever.</p>
+    </div>
+  </section>
+
+  <!-- ============ LOG SCREEN ============ -->
+  <section id="screen-log" class="screen">
+    <div class="card">
+      <h2>New entry</h2>
+      <div class="row2">
+        <div>
+          <label class="fld">Date</label>
+          <input type="date" id="log-date">
+        </div>
+        <div>
+          <label class="fld">Bean</label>
+          <select id="log-bean"></select>
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label class="fld">Grind (rotations)</label>
+          <input type="number" id="log-grind" inputmode="decimal" step="0.1" placeholder="1.8">
+        </div>
+        <div>
+          <label class="fld">Ratio (1:x)</label>
+          <input type="number" id="log-ratio" inputmode="decimal" step="0.5" placeholder="15">
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label class="fld">Water temp (°C)</label>
+          <input type="number" id="log-temp" inputmode="numeric" placeholder="92">
+        </div>
+        <div>
+          <label class="fld">Rating</label>
+          <select id="log-rating">
+            <option value="5">★★★★★</option>
+            <option value="4">★★★★</option>
+            <option value="3" selected>★★★</option>
+            <option value="2">★★</option>
+            <option value="1">★</option>
+          </select>
+        </div>
+      </div>
+      <label class="fld">Notes</label>
+      <textarea id="log-notes" placeholder="e.g. bloomed well, slightly bitter finish"></textarea>
+      <button class="btn" onclick="saveLog()">Save entry</button>
+    </div>
+    <div id="log-list"></div>
+  </section>
+
+  <!-- ============ BEANS / SETUP SCREEN ============ -->
+  <section id="screen-beans" class="screen">
+    <p class="muted" style="margin:4px 2px 10px">Your beans</p>
+    <div id="manage-list"></div>
+    <button class="btn secondary" style="margin-top:0" onclick="openBeanForm()">+ Add a bean</button>
+
+    <div class="card hidden" id="bean-form" style="margin-top:12px">
+      <h2 id="bean-form-title">New bean</h2>
+      <label class="fld">Name</label>
+      <input type="text" id="bf-name" placeholder="e.g. Sagada arabica">
+      <label class="fld">Short description</label>
+      <input type="text" id="bf-desc" placeholder="e.g. medium roast, chocolatey">
+      <label class="fld">Brew style</label>
+      <select id="bf-style">
+        <option value="pourover">Pour-over</option>
+        <option value="boiled">Boiled (barako style)</option>
+      </select>
+      <div class="row2">
+        <div><label class="fld">Grind min (rotations)</label><input type="number" id="bf-grind-min" step="0.1" inputmode="decimal" placeholder="1.7"></div>
+        <div><label class="fld">Grind max</label><input type="number" id="bf-grind-max" step="0.1" inputmode="decimal" placeholder="1.9"></div>
+      </div>
+      <div class="row2">
+        <div><label class="fld">Temp min (°C)</label><input type="number" id="bf-temp-min" inputmode="numeric" placeholder="90"></div>
+        <div><label class="fld">Temp max</label><input type="number" id="bf-temp-max" inputmode="numeric" placeholder="93"></div>
+      </div>
+      <div class="row2">
+        <div><label class="fld">Brew time min (m:ss)</label><input type="text" id="bf-time-min" placeholder="2:30"></div>
+        <div><label class="fld">Brew time max</label><input type="text" id="bf-time-max" placeholder="3:00"></div>
+      </div>
+      <label class="fld">Ratio (1:x)</label>
+      <input type="number" id="bf-ratio" step="0.5" inputmode="decimal" value="15">
+      <label class="fld">Tip / note (shown on the recipe card)</label>
+      <textarea id="bf-note" placeholder="e.g. gets bitter fast — stay coarse"></textarea>
+      <button class="btn" onclick="saveBeanForm()">Save bean</button>
+      <button class="btn danger hidden" id="bf-delete" onclick="deleteBean()">Delete bean</button>
+      <button class="btn secondary" onclick="closeBeanForm()">Cancel</button>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Setup</h2>
+      <label class="fld">Grinder name</label>
+      <input type="text" id="set-grinder" onchange="saveSettings()">
+      <label class="fld">Grams per level tablespoon (spoon mode)</label>
+      <input type="number" id="set-tbsp" step="0.5" inputmode="decimal" onchange="saveSettings()">
+      <p class="muted small" style="margin-top:8px">When you get a scale, weigh one of your usual spoonfuls of beans and put the real number here — spoon mode gets accurate.</p>
+      <button class="btn secondary" onclick="resetBeans()">Restore default beans</button>
+    </div>
+  </section>
+
+</main>
+
+<nav>
+  <button id="nav-brew" class="active" onclick="showScreen('brew')"><span class="ico">☕</span>Brew</button>
+  <button id="nav-taste" onclick="showScreen('taste')"><span class="ico">👅</span>Taste</button>
+  <button id="nav-log" onclick="showScreen('log')"><span class="ico">📓</span>Log</button>
+  <button id="nav-beans" onclick="showScreen('beans')"><span class="ico">🫘</span>Beans</button>
+</nav>
+
+<script>
+'use strict';
+
+/* ============ Bean data ============ */
+const DEFAULT_BEANS = [
+  {
+    id: 'excelsa',
+    name: 'Excelsa (dark roast)',
+    desc: 'Local, bold — watch for bitterness',
+    style: 'pourover',
+    grindMin: 1.8, grindMax: 2.0,
+    tempMin: 88, tempMax: 92,
+    timeMin: 150, timeMax: 180,
+    ratio: 15,
+    note: 'Dark roasts extract fast. Stay at the cooler end (88–90°C) and the coarser end (2.0) if it turns bitter.'
+  },
+  {
+    id: 'ethiopian',
+    name: 'Ethiopian (light roast)',
+    desc: 'Fruity & floral',
+    style: 'pourover',
+    grindMin: 1.6, grindMax: 1.8,
+    tempMin: 93, tempMax: 96,
+    timeMin: 180, timeMax: 210,
+    ratio: 16,
+    note: 'Light roasts need heat to open up. Fresh off the boil is fine here. Longer brew brings out the florals.'
+  },
+  {
+    id: 'barako',
+    name: 'Kapeng Barako',
+    desc: 'Traditional boiled — Batangas style',
+    style: 'boiled',
+    grindMin: 2.5, grindMax: 3.0,
+    tempMin: 100, tempMax: 100,
+    timeMin: 360, timeMax: 360,
+    ratio: 12,
+    note: 'Brewed in the pot, not the dripper. Sugar goes into the pot the traditional way — optional but authentic.'
+  },
+  {
+    id: 'beanhi',
+    name: 'Beanhi (neighbor’s blend)',
+    desc: 'Reference "good cup" — grind still TBD',
+    style: 'pourover',
+    grindMin: 1.8, grindMax: 1.8,
+    tempMin: 90, tempMax: 93,
+    timeMin: 165, timeMax: 195,
+    ratio: 15,
+    note: 'Grind setting is still being dialed in. Brew, compare against their sample cup, and log what you changed. Medium-roast defaults used as a starting point.'
+  }
+];
+
+const BEANS_KEY = 'brew-companion-beans';
+const SETTINGS_KEY = 'brew-companion-settings';
+const DEFAULT_SETTINGS = { grinder: 'C3 ESP', gramsPerTbsp: 6 }; // rough: 1 level tbsp whole beans ≈ 6 g
+
+let beans = loadBeans();
+let settings = loadSettings();
+
+function loadBeans() {
+  try {
+    const b = JSON.parse(localStorage.getItem(BEANS_KEY));
+    if (Array.isArray(b) && b.length) return b;
+  } catch (e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_BEANS));
+}
+function persistBeans() { localStorage.setItem(BEANS_KEY, JSON.stringify(beans)); }
+
+function loadSettings() {
+  try {
+    return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {});
+  } catch (e) { return Object.assign({}, DEFAULT_SETTINGS); }
+}
+
+/* derived display helpers */
+function rangeText(min, max) { return min === max ? String(min) : min + '–' + max; }
+function grindNum(v) { return Number.isInteger(v) ? v.toFixed(1) : String(v); }
+function grindLabel(b) { return (b.grindMin === b.grindMax ? grindNum(b.grindMin) : grindNum(b.grindMin) + '–' + grindNum(b.grindMax)) + ' rot'; }
+function tempLabel(b) { return b.style === 'boiled' ? 'Rolling boil' : rangeText(b.tempMin, b.tempMax) + '°C'; }
+function timeLabel(b) { return b.style === 'boiled' ? '~' + Math.round(totalSecOf(b) / 60) + ' min total' : fmt(b.timeMin) + '–' + fmt(b.timeMax); }
+function totalSecOf(b) { return b.style === 'boiled' ? 360 : Math.round((b.timeMin + b.timeMax) / 2); }
+function grindMidOf(b) { return Math.round((b.grindMin + b.grindMax) / 2 * 10) / 10; }
+function tempMidOf(b) { return Math.round((b.tempMin + b.tempMax) / 2); }
+function tagOf(b) { return b.style === 'boiled' ? 'boiled' : 'pour-over'; }
+
+let state = {
+  bean: null,
+  mode: 'grams',       // 'grams' | 'spoons'
+  dose: 15,            // in current mode units
+  ratio: 15
+};
+
+/* ============ Navigation ============ */
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'log') renderLogList();
+  if (name === 'beans') renderManageList();
+}
+
+/* ============ Bean picker ============ */
+function renderBeanList() {
+  const el = document.getElementById('bean-list');
+  el.innerHTML = beans.map(b => `
+    <button class="bean-btn" onclick="pickBean('${b.id}')">
+      <span class="btag">${tagOf(b)}</span>
+      <span class="bname">${escapeHtml(b.name)}</span>
+      <span class="bdesc">${escapeHtml(b.desc)}</span>
+    </button>`).join('');
+}
+
+function renderRecipeCard() {
+  document.getElementById('recipe-bean-name').textContent = state.bean.name;
+  document.getElementById('recipe-grid').innerHTML = `
+    <div class="stat"><div class="lbl">Grind (${escapeHtml(settings.grinder)})</div><div class="val">${grindLabel(state.bean)}</div></div>
+    <div class="stat"><div class="lbl">Water temp</div><div class="val">${tempLabel(state.bean)}</div></div>
+    <div class="stat"><div class="lbl">Ratio</div><div class="val">1:${state.bean.ratio}</div></div>
+    <div class="stat"><div class="lbl">Brew time</div><div class="val">${timeLabel(state.bean)}</div></div>`;
+}
+
+function pickBean(id) {
+  state.bean = beans.find(b => b.id === id);
+  state.ratio = state.bean.ratio;
+  document.getElementById('ratio-input').value = state.ratio;
+  renderRecipeCard();
+  document.getElementById('recipe-note').textContent = state.bean.note;
+  document.getElementById('bloom-lbl').textContent = state.bean.style === 'boiled' ? 'Grounds' : 'Bloom water';
+  document.getElementById('start-brew-btn').textContent =
+    state.bean.style === 'boiled' ? 'Start boiled brew ▶' : 'Start guided brew ▶';
+  document.getElementById('brew-pick').classList.add('hidden');
+  document.getElementById('brew-recipe').classList.remove('hidden');
+  recalc();
+}
+
+function backToPicker() {
+  document.getElementById('brew-recipe').classList.add('hidden');
+  document.getElementById('brew-pick').classList.remove('hidden');
+}
+
+/* ============ Dose / ratio calculator ============ */
+function setMode(mode) {
+  if (mode === state.mode) return;
+  const doseEl = document.getElementById('dose-input');
+  let grams = currentDoseGrams();
+  state.mode = mode;
+  document.getElementById('mode-grams').classList.toggle('active', mode === 'grams');
+  document.getElementById('mode-spoons').classList.toggle('active', mode === 'spoons');
+  document.getElementById('dose-label').textContent =
+    mode === 'grams' ? 'Coffee (g)' : 'Coffee (level tbsp of beans)';
+  doseEl.value = mode === 'grams'
+    ? Math.round(grams)
+    : Math.round(grams / settings.gramsPerTbsp * 2) / 2; // nearest half spoon
+  recalc();
+}
+
+function currentDoseGrams() {
+  const v = parseFloat(document.getElementById('dose-input').value) || 0;
+  return state.mode === 'grams' ? v : v * settings.gramsPerTbsp;
+}
+
+function bumpDose(dir) {
+  const el = document.getElementById('dose-input');
+  const step = state.mode === 'grams' ? 1 : 0.5;
+  el.value = Math.max(step, (parseFloat(el.value) || 0) + dir * step);
+  recalc();
+}
+
+function bumpRatio(delta) {
+  const el = document.getElementById('ratio-input');
+  el.value = Math.min(20, Math.max(8, (parseFloat(el.value) || 15) + delta));
+  recalc();
+}
+
+function recalc() {
+  if (!state.bean) return;
+  state.ratio = parseFloat(document.getElementById('ratio-input').value) || state.bean.ratio;
+  document.getElementById('ratio-val').textContent = state.ratio;
+  const g = currentDoseGrams();
+  const water = Math.round(g * state.ratio);
+  const bloom = Math.round(g * 2);
+  document.getElementById('calc-water').textContent = water + ' ml';
+  const spoonNote = document.getElementById('spoon-note');
+  if (state.bean.style === 'boiled') {
+    document.getElementById('calc-bloom').textContent = Math.round(g) + ' g';
+  } else {
+    document.getElementById('calc-bloom').textContent = bloom + ' ml';
+  }
+  if (state.mode === 'spoons') {
+    spoonNote.textContent = `≈ ${Math.round(g)} g coffee (1 level tbsp ≈ ${settings.gramsPerTbsp} g). For water, a standard cup is ~240 ml — ${water} ml ≈ ${(water / 240).toFixed(1)} cups.`;
+    spoonNote.classList.remove('hidden');
+  } else {
+    spoonNote.classList.add('hidden');
+  }
+}
+
+/* ============ Guided timer ============ */
+let timer = { steps: [], totalSec: 0, elapsed: 0, running: false, interval: null, curStep: -1, wakeLock: null };
+
+function buildPourOverSteps() {
+  const g = currentDoseGrams();
+  const total = Math.round(g * state.ratio);
+  const bloom = Math.round(g * 2);
+  const totalSec = totalSecOf(state.bean);
+  const remaining = total - bloom;
+  // bloom 0–40s, then 2 circular pours, drawdown to total time
+  const pour1End = Math.round(bloom + remaining * 0.5);
+  const p1Start = 40;
+  const p2Start = Math.min(totalSec - 40, Math.round(totalSec * 0.5));
+  return {
+    totalSec,
+    steps: [
+      { at: 0, label: 'Bloom', detail: `Pour ${bloom} ml slowly in the center. Wet all the grounds. Let it bubble.`, target: `${bloom} ml` },
+      { at: p1Start, label: 'First pour', detail: `Pour in slow circles, center outward, up to ${pour1End} ml total.`, target: `→ ${pour1End} ml` },
+      { at: p2Start, label: 'Second pour', detail: `Slow circles again up to ${total} ml total. Keep the bed flat.`, target: `→ ${total} ml` },
+      { at: Math.round(totalSec * 0.75), label: 'Drawdown', detail: 'Stop pouring. Let it drain fully. Swirl gently if the bed looks uneven.', target: '' }
+    ]
+  };
+}
+
+function buildBarakoSteps() {
+  const g = currentDoseGrams();
+  const water = Math.round(g * state.ratio);
+  return {
+    totalSec: 360,
+    steps: [
+      { at: 0, label: 'Boil', detail: `Bring ${water} ml of water to a rolling boil in the pot.`, target: `${water} ml` },
+      { at: 60, label: 'Add coffee', detail: `Take off the heat. Stir in ${Math.round(g)} g coarse grounds (${state.bean.grindMin}+ rotations). Add sugar to the pot if you like it traditional.`, target: `${Math.round(g)} g` },
+      { at: 90, label: 'Steep', detail: 'Cover and steep. Stir once halfway.', target: '' },
+      { at: 270, label: 'Settle', detail: 'Let the grounds sink to the bottom. Don’t stir anymore.', target: '' },
+      { at: 330, label: 'Serve', detail: 'Pour slowly through a strainer (or carefully off the top). Leave the sludge in the pot.', target: '' }
+    ]
+  };
+}
+
+function startTimer() {
+  const plan = state.bean.style === 'boiled' ? buildBarakoSteps() : buildPourOverSteps();
+  timer.steps = plan.steps;
+  timer.totalSec = plan.totalSec;
+  timer.elapsed = 0;
+  timer.curStep = -1;
+  timer.running = true;
+  document.getElementById('brew-recipe').classList.add('hidden');
+  document.getElementById('brew-timer').classList.remove('hidden');
+  document.getElementById('timer-main-btn').textContent = 'Pause';
+  document.getElementById('timer-total').textContent =
+    `Target total: ${fmt(timer.totalSec)}` + (state.bean.style === 'boiled' ? '' : ` · ${tempLabel(state.bean)} water`);
+  renderTimerSteps();
+  tick();
+  clearInterval(timer.interval);
+  timer.interval = setInterval(tick, 1000);
+  requestWakeLock();
+}
+
+function tick() {
+  if (!timer.running) return;
+  updateTimerUI();
+  timer.elapsed++;
+  if (timer.elapsed > timer.totalSec + 60) { // auto-finish 1 min past target
+    finishTimer();
+  }
+}
+
+function updateTimerUI() {
+  const e = timer.elapsed;
+  document.getElementById('timer-clock').textContent = fmt(e);
+  // find current step
+  let idx = 0;
+  for (let i = 0; i < timer.steps.length; i++) if (e >= timer.steps[i].at) idx = i;
+  if (idx !== timer.curStep) {
+    timer.curStep = idx;
+    cue();
+  }
+  const s = timer.steps[idx];
+  document.getElementById('timer-phase').textContent = s.label;
+  document.getElementById('timer-sub').textContent = s.detail;
+  document.getElementById('timer-target').textContent = s.target;
+  const next = timer.steps[idx + 1];
+  document.getElementById('timer-progress').style.width =
+    Math.min(100, e / timer.totalSec * 100) + '%';
+  // step list highlighting
+  document.querySelectorAll('.step-item').forEach((el, i) => {
+    el.classList.toggle('current', i === idx);
+    el.classList.toggle('done', i < idx);
+  });
+  if (e >= timer.totalSec && !document.getElementById('timer-clock').classList.contains('over')) {
+    document.getElementById('timer-clock').style.color = 'var(--good)';
+  }
+}
+
+function renderTimerSteps() {
+  document.getElementById('timer-steps').innerHTML = timer.steps.map(s => `
+    <div class="step-item"><span class="t">${fmt(s.at)}</span><span>${s.label} — ${s.detail}</span></div>`).join('');
+}
+
+function timerMainAction() {
+  timer.running = !timer.running;
+  document.getElementById('timer-main-btn').textContent = timer.running ? 'Pause' : 'Resume';
+}
+
+function stopTimer() { finishTimer(); }
+
+function finishTimer() {
+  clearInterval(timer.interval);
+  timer.running = false;
+  releaseWakeLock();
+  document.getElementById('timer-clock').style.color = '';
+  document.getElementById('brew-timer').classList.add('hidden');
+  document.getElementById('brew-done').classList.remove('hidden');
+  const g = Math.round(currentDoseGrams());
+  document.getElementById('done-summary').textContent =
+    `${state.bean.name} · ${g} g @ 1:${state.ratio} · ${fmt(Math.min(timer.elapsed, timer.totalSec + 60))}`;
+}
+
+function resetBrew() {
+  document.getElementById('brew-done').classList.add('hidden');
+  document.getElementById('brew-pick').classList.remove('hidden');
+}
+
+function fmt(sec) {
+  return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+}
+
+/* sound + vibration cue on step change */
+let audioCtx = null;
+function cue() {
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    o.connect(gain); gain.connect(audioCtx.destination);
+    o.frequency.value = 880;
+    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+    o.start(); o.stop(audioCtx.currentTime + 0.5);
+  } catch (e) { /* audio not available */ }
+}
+
+/* keep screen on during brew */
+async function requestWakeLock() {
+  try { timer.wakeLock = await navigator.wakeLock?.request('screen'); } catch (e) {}
+}
+function releaseWakeLock() {
+  timer.wakeLock?.release().catch(() => {});
+  timer.wakeLock = null;
+}
+
+/* ============ Taste troubleshooter ============ */
+const ADVICE = {
+  bitter: {
+    title: '😖 Bitter — over-extracted',
+    tips: [
+      'Grind <b>coarser</b>: go up ~0.2 rotations on the {grinder}.',
+      'Use <b>cooler</b> water: drop ~3°C (especially for the dark Excelsa — try 88°C).',
+      'Brew <b>shorter</b>: pour a little faster, aim ~15–20s less total time.',
+      'Dark roasts are prone to this — stay at the cool/coarse end of their range.'
+    ]
+  },
+  sour: {
+    title: '😬 Sour or weak — under-extracted',
+    tips: [
+      'Grind <b>finer</b>: go down ~0.2 rotations on the {grinder}.',
+      'Use <b>hotter</b> water: raise ~3°C (light Ethiopian likes 95–96°C).',
+      'Brew <b>longer</b>: slower pours, aim ~15–20s more total time.',
+      'If weak/watery rather than sour, also try a stronger ratio: 1:15 → 1:14.'
+    ]
+  },
+  good: {
+    title: '😋 Just right',
+    tips: [
+      '<b>Log it now</b> — grind, ratio, temp — so you can repeat it exactly.',
+      'This is your new baseline for this bean. Only change things on purpose from here.'
+    ]
+  }
+};
+
+function showAdvice(kind) {
+  const a = ADVICE[kind];
+  document.getElementById('advice-title').innerHTML = a.title;
+  document.getElementById('advice-list').innerHTML =
+    a.tips.map(t => `<li>${t.replace('{grinder}', escapeHtml(settings.grinder))}</li>`).join('');
+  document.getElementById('advice-card').classList.remove('hidden');
+}
+
+/* ============ Brew log (localStorage) ============ */
+const LOG_KEY = 'brew-companion-log';
+
+function getLogs() {
+  try { return JSON.parse(localStorage.getItem(LOG_KEY)) || []; } catch (e) { return []; }
+}
+
+function saveLog() {
+  const entry = {
+    id: Date.now(),
+    date: document.getElementById('log-date').value,
+    bean: document.getElementById('log-bean').value,
+    grind: document.getElementById('log-grind').value,
+    ratio: document.getElementById('log-ratio').value,
+    temp: document.getElementById('log-temp').value,
+    rating: document.getElementById('log-rating').value,
+    notes: document.getElementById('log-notes').value.trim()
+  };
+  const logs = getLogs();
+  logs.unshift(entry);
+  localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+  document.getElementById('log-notes').value = '';
+  renderLogList();
+}
+
+function deleteLog(id) {
+  const logs = getLogs().filter(l => l.id !== id);
+  localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+  renderLogList();
+}
+
+function renderLogList() {
+  const logs = getLogs();
+  const el = document.getElementById('log-list');
+  if (!logs.length) {
+    el.innerHTML = '<p class="muted" style="text-align:center;padding:20px">No brews logged yet.</p>';
+    return;
+  }
+  el.innerHTML = logs.map(l => `
+    <div class="log-entry">
+      <div class="top">
+        <span class="bean">${escapeHtml(l.bean)}</span>
+        <span class="stars">${'★'.repeat(+l.rating)}</span>
+      </div>
+      <div class="muted small">${l.date || ''}</div>
+      <div style="margin:5px 0 3px">
+        ${l.grind ? `<span class="badge">${escapeHtml(l.grind)} rot</span>` : ''}
+        ${l.ratio ? `<span class="badge">1:${escapeHtml(l.ratio)}</span>` : ''}
+        ${l.temp ? `<span class="badge">${escapeHtml(l.temp)}°C</span>` : ''}
+      </div>
+      ${l.notes ? `<div class="small" style="margin-top:4px">${escapeHtml(l.notes)}</div>` : ''}
+      <button class="del" onclick="deleteLog(${l.id})">delete</button>
+    </div>`).join('');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function goLogPrefilled() {
+  document.getElementById('log-bean').value = state.bean.name;
+  document.getElementById('log-grind').value = grindMidOf(state.bean);
+  document.getElementById('log-ratio').value = state.ratio;
+  document.getElementById('log-temp').value = tempMidOf(state.bean);
+  showScreen('log');
+  resetBrew();
+}
+
+/* ============ Bean management ============ */
+let editingBeanId = null;
+
+function renderManageList() {
+  document.getElementById('manage-list').innerHTML = beans.map(b => `
+    <div class="card" style="padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div style="min-width:0">
+          <b>${escapeHtml(b.name)}</b>
+          <div class="muted small">${grindLabel(b)} · 1:${b.ratio} · ${tempLabel(b)} · ${tagOf(b)}</div>
+        </div>
+        <button class="btn secondary" style="width:auto;margin:0;padding:8px 16px;flex-shrink:0" onclick="openBeanForm('${b.id}')">Edit</button>
+      </div>
+    </div>`).join('');
+}
+
+function openBeanForm(id) {
+  editingBeanId = id || null;
+  const b = id ? beans.find(x => x.id === id) : null;
+  document.getElementById('bean-form-title').textContent = b ? 'Edit bean' : 'New bean';
+  document.getElementById('bf-name').value = b ? b.name : '';
+  document.getElementById('bf-desc').value = b ? b.desc : '';
+  document.getElementById('bf-style').value = b ? b.style : 'pourover';
+  document.getElementById('bf-grind-min').value = b ? b.grindMin : '';
+  document.getElementById('bf-grind-max').value = b ? b.grindMax : '';
+  document.getElementById('bf-temp-min').value = b ? b.tempMin : '';
+  document.getElementById('bf-temp-max').value = b ? b.tempMax : '';
+  document.getElementById('bf-time-min').value = b ? fmt(b.timeMin) : '';
+  document.getElementById('bf-time-max').value = b ? fmt(b.timeMax) : '';
+  document.getElementById('bf-ratio').value = b ? b.ratio : 15;
+  document.getElementById('bf-note').value = b ? b.note : '';
+  document.getElementById('bf-delete').classList.toggle('hidden', !b);
+  document.getElementById('bean-form').classList.remove('hidden');
+  document.getElementById('bean-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeBeanForm() {
+  editingBeanId = null;
+  document.getElementById('bean-form').classList.add('hidden');
+}
+
+/* "2:30" → 150; plain "3" → 180 (minutes) */
+function parseTime(str) {
+  str = String(str).trim();
+  if (!str) return NaN;
+  if (str.includes(':')) {
+    const [m, s] = str.split(':');
+    return (parseInt(m, 10) || 0) * 60 + (parseInt(s, 10) || 0);
+  }
+  return Math.round(parseFloat(str) * 60);
+}
+
+function num(id, fallback) {
+  const v = parseFloat(document.getElementById(id).value);
+  return isNaN(v) ? fallback : v;
+}
+
+function saveBeanForm() {
+  const name = document.getElementById('bf-name').value.trim();
+  if (!name) { alert('Give the bean a name.'); return; }
+  const style = document.getElementById('bf-style').value;
+  const grindMin = num('bf-grind-min', style === 'boiled' ? 2.5 : 1.8);
+  const tempMin = num('bf-temp-min', style === 'boiled' ? 100 : 90);
+  const tMin = parseTime(document.getElementById('bf-time-min').value);
+  const tMax = parseTime(document.getElementById('bf-time-max').value);
+  const timeMin = isNaN(tMin) ? (style === 'boiled' ? 360 : 165) : tMin;
+  const bean = {
+    id: editingBeanId || 'bean-' + Date.now(),
+    name,
+    desc: document.getElementById('bf-desc').value.trim(),
+    style,
+    grindMin,
+    grindMax: Math.max(grindMin, num('bf-grind-max', grindMin)),
+    tempMin,
+    tempMax: Math.max(tempMin, num('bf-temp-max', tempMin)),
+    timeMin,
+    timeMax: Math.max(timeMin, isNaN(tMax) ? timeMin : tMax),
+    ratio: num('bf-ratio', 15),
+    note: document.getElementById('bf-note').value.trim()
+  };
+  const idx = beans.findIndex(b => b.id === bean.id);
+  if (idx >= 0) beans[idx] = bean; else beans.push(bean);
+  persistBeans();
+  afterBeansChanged();
+  closeBeanForm();
+}
+
+function deleteBean() {
+  if (!editingBeanId) return;
+  const b = beans.find(x => x.id === editingBeanId);
+  if (!confirm(`Delete "${b.name}"? Its log entries are kept.`)) return;
+  beans = beans.filter(x => x.id !== editingBeanId);
+  persistBeans();
+  afterBeansChanged();
+  closeBeanForm();
+}
+
+function resetBeans() {
+  if (!confirm('Restore the 4 default beans? Beans you added or edited will be replaced.')) return;
+  beans = JSON.parse(JSON.stringify(DEFAULT_BEANS));
+  persistBeans();
+  afterBeansChanged();
+}
+
+function afterBeansChanged() {
+  renderBeanList();
+  renderManageList();
+  refreshLogBeanOptions();
+  const cur = state.bean && beans.find(b => b.id === state.bean.id);
+  if (state.bean && !cur) {
+    state.bean = null;
+    document.getElementById('brew-recipe').classList.add('hidden');
+    document.getElementById('brew-pick').classList.remove('hidden');
+  } else if (cur) {
+    state.bean = cur;
+    renderRecipeCard();
+  }
+}
+
+/* ============ Settings ============ */
+function saveSettings() {
+  settings.grinder = document.getElementById('set-grinder').value.trim() || DEFAULT_SETTINGS.grinder;
+  settings.gramsPerTbsp = num('set-tbsp', DEFAULT_SETTINGS.gramsPerTbsp);
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  if (state.bean) renderRecipeCard();
+  recalc();
+}
+
+function refreshLogBeanOptions() {
+  const cur = document.getElementById('log-bean').value;
+  document.getElementById('log-bean').innerHTML =
+    beans.map(b => `<option>${escapeHtml(b.name)}</option>`).join('') + '<option>Other</option>';
+  if (cur) document.getElementById('log-bean').value = cur;
+}
+
+/* ============ Init ============ */
+function init() {
+  renderBeanList();
+  renderManageList();
+  document.getElementById('log-date').value = new Date().toISOString().slice(0, 10);
+  refreshLogBeanOptions();
+  document.getElementById('set-grinder').value = settings.grinder;
+  document.getElementById('set-tbsp').value = settings.gramsPerTbsp;
+  renderLogList();
+}
+init();
+</script>
+</body>
+</html>
