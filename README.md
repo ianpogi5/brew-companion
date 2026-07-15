@@ -2,7 +2,13 @@
 
 A personal pour-over coffee guide — single-file, mobile-first web app. Live at [brew.kdc.sh](https://brew.kdc.sh).
 
-Built for a beginner dialing in pour-over with a Timemore C3 ESP hand grinder and a generic glass cone dripper, plus traditional Filipino kapeng barako (boiled, Batangas style).
+Built for a beginner dialing in pour-over with a Timemore C3 ESP hand grinder and a generic glass cone dripper, plus traditional Filipino kapeng barako (boiled Batangas style — or on the dripper, treated like a dark roast).
+
+## Screenshots
+
+| Bean picker | Recipe & dose | Guided timer | Bean editor |
+|:---:|:---:|:---:|:---:|
+| ![Bean picker](screenshots/picker.png) | ![Recipe and dose calculator](screenshots/recipe.png) | ![Guided pour timer](screenshots/timer.png) | ![Bean editor and setup](screenshots/beans.png) |
 
 ## Features
 

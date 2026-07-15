@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#2b1d16">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%232b1d16%22/><text x=%2250%22 y=%2272%22 font-size=%2260%22 text-anchor=%22middle%22>☕</text></svg>">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Brew Companion</title>
 <style>
   :root {
@@ -501,7 +503,18 @@ const DEFAULT_BEANS = [
     tempMin: 100, tempMax: 100,
     timeMin: 360, timeMax: 360,
     ratio: 12,
-    note: 'Brewed in the pot, not the dripper. Sugar goes into the pot the traditional way — optional but authentic.'
+    note: 'Brewed in the pot, not the dripper. Sugar goes into the pot the traditional way — optional but authentic. For the dripper, pick "Barako (pour-over)" instead.'
+  },
+  {
+    id: 'barako-pourover',
+    name: 'Barako (pour-over)',
+    desc: 'Liberica dark roast on the dripper',
+    style: 'pourover',
+    grindMin: 2.0, grindMax: 2.2,
+    tempMin: 88, tempMax: 90,
+    timeMin: 150, timeMax: 180,
+    ratio: 15,
+    note: 'Treat barako like the Excelsa, but coarser — liberica roasts dark and extracts fast. The big beans grind unevenly in a hand grinder, so crank slow and steady. If it comes out harsh, go coarser (2.2+) and cooler (88°C). No sugar needed — the dripper tames it.'
   },
   {
     id: 'beanhi',
@@ -517,6 +530,8 @@ const DEFAULT_BEANS = [
 ];
 
 const BEANS_KEY = 'brew-companion-beans';
+const SEED_KEY = 'brew-companion-seed';
+const SEED_VERSION = 2; // bump when DEFAULT_BEANS gains entries existing devices should receive
 const SETTINGS_KEY = 'brew-companion-settings';
 const DEFAULT_SETTINGS = { grinder: 'C3 ESP', gramsPerTbsp: 6 }; // rough: 1 level tbsp whole beans ≈ 6 g
 
@@ -524,11 +539,20 @@ let beans = loadBeans();
 let settings = loadSettings();
 
 function loadBeans() {
+  let stored = null;
   try {
     const b = JSON.parse(localStorage.getItem(BEANS_KEY));
-    if (Array.isArray(b) && b.length) return b;
+    if (Array.isArray(b) && b.length) stored = b;
   } catch (e) {}
-  return JSON.parse(JSON.stringify(DEFAULT_BEANS));
+  const seeded = parseInt(localStorage.getItem(SEED_KEY), 10) || 1;
+  if (stored && seeded < SEED_VERSION) {
+    DEFAULT_BEANS.forEach(d => {
+      if (!stored.some(b => b.id === d.id)) stored.push(JSON.parse(JSON.stringify(d)));
+    });
+    localStorage.setItem(BEANS_KEY, JSON.stringify(stored));
+  }
+  localStorage.setItem(SEED_KEY, SEED_VERSION);
+  return stored || JSON.parse(JSON.stringify(DEFAULT_BEANS));
 }
 function persistBeans() { localStorage.setItem(BEANS_KEY, JSON.stringify(beans)); }
 

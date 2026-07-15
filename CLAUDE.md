@@ -15,7 +15,9 @@
 2. Ethiopian (light roast) — fruity/floral. ~1.6–1.8 rotations,
    water 93–96°C, brew 3:00–3:30
 3. Barako — best brewed boiled (traditional Batangas style),
-   coarse grind 2.5+ rotations, 1:12 ratio, sugar in pot
+   coarse grind 2.5+ rotations, 1:12 ratio, sugar in pot.
+   Also works pour-over: treat like dark roast but coarser —
+   2.0–2.2 rotations, 88–90°C, 1:15, brew 2:30–3:00
 4. Beanhi (neighbor's local blend, whole beans) — reference
    "good cup"; grind setting TBD by matching their sample
 
