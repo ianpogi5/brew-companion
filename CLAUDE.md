@@ -21,6 +21,10 @@
 4. Beanhi (neighbor's local blend, whole beans) — barako–excelsa
    blend; reference "good cup". Start ~1.9–2.1 rotations,
    88–91°C, 1:15; dial in by matching their sample
+5. Silcafe Silca Reserve (Silang, Cavite) — 100% arabica dark
+   roast, whole beans, 250g. More forgiving than the local
+   liberica/excelsa. ~1.8–2.0 rotations, 89–92°C, 1:15,
+   brew 2:30–3:00
 
 ## Features
 - Bean picker → shows grind setting, ratio, temp for that bean

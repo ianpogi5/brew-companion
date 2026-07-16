@@ -540,13 +540,24 @@ const DEFAULT_BEANS = [
     timeMin: 150, timeMax: 180,
     ratio: 15,
     note: 'A barako–excelsa blend: both bold beans that extract fast, so start coarse and cool. Dial in by brewing against their sample cup — log every change until it matches.'
+  },
+  {
+    id: 'silcafe-reserve',
+    name: 'Silcafe Silca Reserve',
+    desc: '100% Arabica dark roast — Silang, Cavite',
+    style: 'pourover',
+    grindMin: 1.8, grindMax: 2.0,
+    tempMin: 89, tempMax: 92,
+    timeMin: 150, timeMax: 180,
+    ratio: 15,
+    note: 'Arabica is more forgiving than your excelsa and barako, but it’s still a dark roast — keep the water off the boil. Start at 1.9 rotations / 90°C. If it tastes flat or papery, nudge finer (1.8) or hotter (92°C); if bitter, go coarser and cooler like the Excelsa.'
   }
 ];
 
 const BEANS_KEY = 'brew-companion-beans';
 const SEED_KEY = 'brew-companion-seed';
-const SEED_VERSION = 3; // bump when defaults change in a way existing devices should receive
-const SEED_ADDITIONS = { 2: ['barako-pourover'] }; // bean ids introduced at each seed version
+const SEED_VERSION = 4; // bump when defaults change in a way existing devices should receive
+const SEED_ADDITIONS = { 2: ['barako-pourover'], 4: ['silcafe-reserve'] }; // bean ids introduced at each seed version
 const SETTINGS_KEY = 'brew-companion-settings';
 const DEFAULT_SETTINGS = { grinder: 'C3 ESP', gramsPerTbsp: 6 }; // rough: 1 level tbsp whole beans ≈ 6 g
 
@@ -1067,7 +1078,7 @@ function deleteBean() {
 }
 
 function resetBeans() {
-  if (!confirm('Restore the 4 default beans? Beans you added or edited will be replaced.')) return;
+  if (!confirm(`Restore the ${DEFAULT_BEANS.length} default beans? Beans you added or edited will be replaced.`)) return;
   beans = JSON.parse(JSON.stringify(DEFAULT_BEANS));
   persistBeans();
   afterBeansChanged();
